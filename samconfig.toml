@@ -1,0 +1,19 @@
+version = 0.1
+
+[default.global.parameters]
+stack_name = "FortuneDemo"
+region = "us-east-1"
+
+[default.sync.parameters]
+template_file = "/home/sdparada/projects/S3-LAMBDA-DYNAMODB/fortune-demo.yml"
+s3_bucket = "fortune-demo-84hjt85jt854jr"
+dependency_layer = false
+watch = true
+
+[default.deploy.parameters]
+resolve_s3 = true
+s3_prefix = "FortuneDemo"
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+confirm_changeset = true
+disable_rollback = true

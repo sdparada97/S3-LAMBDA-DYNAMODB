@@ -1,0 +1,64 @@
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  FortuneBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub fortune-cookie-bucket-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        # 🔹 Borra objetos después de 1 día (evita costos)
+        Rules:
+          - Id: DeleteOldFiles
+            Status: Enabled
+            ExpirationInDays: 1
+
+  FortuneLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: !Sub
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: FortuneLambda
+      CodeUri: src/FortuneLambda
+      Handler: handler.lambda_handler # ✅ Corrección del handler
+      Runtime: python3.11
+      MemorySize: 128 # 🔹 Mínimo para evitar costos extra
+      Timeout: 5 # 🔹 Máximo 5 segundos
+      Environment:
+        Variables:
+          FORTUNECOOKIES_TABLE_NAME: !Ref FortuneCookies
+          FORTUNECOOKIES_TABLE_ARN: !GetAtt FortuneCookies.Arn
+          FORTUNECOOKIES_BUCKET_NAME: !Ref FortuneBucket
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FortuneCookies
+        - S3WritePolicy:
+            BucketName: !Ref FortuneBucket
+
+  FortuneCookies:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FortuneCookies
+      BillingMode: PROVISIONED # 🔹 Evita costos de on-demand
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1 # 🔹 Máximo 1 lectura por segundo (gratis)
+        WriteCapacityUnits: 1 # 🔹 Máximo 1 escritura por segundo (gratis)
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+Outputs:
+  LambdaFunction:
+    Description: Lambda Function For Fortune Cookies
+    Value: !GetAtt FortuneLambda.Arn
+  DynamoDBTable:
+    Description: DynamoDB Table For Fortune Cookies
+    Value: !Ref FortuneCookies
+  S3Bucket:
+    Description: S3 Bucket For Fortune Cookies
+    Value: !Ref FortuneBucket

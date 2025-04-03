@@ -1,0 +1,75 @@
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  FortuneBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: fortune-cookie-bucket-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+        - Id: DeleteOldFiles
+          Status: Enabled
+          ExpirationInDays: 1
+  FortuneLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description:
+        Fn::Sub:
+        - Stack ${AWS::StackName} Function ${ResourceName}
+        - ResourceName: FortuneLambda
+      CodeUri: FortuneLambda
+      Handler: handler.lambda_handler
+      Runtime: python3.11
+      MemorySize: 128
+      Timeout: 5
+      Environment:
+        Variables:
+          FORTUNECOOKIES_TABLE_NAME:
+            Ref: FortuneCookies
+          FORTUNECOOKIES_TABLE_ARN:
+            Fn::GetAtt:
+            - FortuneCookies
+            - Arn
+          FORTUNECOOKIES_BUCKET_NAME:
+            Ref: FortuneBucket
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: FortuneCookies
+      - S3WritePolicy:
+          BucketName:
+            Ref: FortuneBucket
+    Metadata:
+      SamResourceId: FortuneLambda
+  FortuneCookies:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FortuneCookies
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+Outputs:
+  LambdaFunction:
+    Description: Lambda Function For Fortune Cookies
+    Value:
+      Fn::GetAtt:
+      - FortuneLambda
+      - Arn
+  DynamoDBTable:
+    Description: DynamoDB Table For Fortune Cookies
+    Value:
+      Ref: FortuneCookies
+  S3Bucket:
+    Description: S3 Bucket For Fortune Cookies
+    Value:
+      Ref: FortuneBucket
