@@ -1,6 +1,6 @@
-# FortunaCookiesDemo
+# FortuneCookiesDemo
 
-**FortunaCookiesDemo** es un proyecto demostrativo que muestra cómo integrar **Amazon S3**, **AWS Lambda** y **Amazon DynamoDB** utilizando una arquitectura serverless en AWS. Este demo genera "galletas de la fortuna" aleatorias, almacenadas en S3, procesadas por una función Lambda en **Python** y registradas en DynamoDB, asegurando un flujo sin costos dentro de la capa gratuita de AWS.
+**FortuneCookiesDemo** es un proyecto demostrativo que muestra cómo integrar **Amazon S3**, **AWS Lambda** y **Amazon DynamoDB** utilizando una arquitectura serverless en AWS. Este demo genera "galletas de la fortuna" aleatorias, almacenadas en S3, procesadas por una función Lambda en **Python** y registradas en DynamoDB, asegurando un flujo sin costos dentro de la capa gratuita de AWS.
 
 ## Tecnologías Utilizadas
 - **AWS S3**: Almacena los mensajes predefinidos de las galletas de la fortuna.
